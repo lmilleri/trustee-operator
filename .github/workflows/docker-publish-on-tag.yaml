@@ -16,7 +16,8 @@ env:
 
   REGISTRY: quay.io
   # github.repository as <account>/<repo>
-  IMAGE_NAME: ${{ github.repository }}
+  # IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: rh_ee_lmilleri/kbs-operator
 
 
 jobs:
