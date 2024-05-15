@@ -310,6 +310,7 @@ func (r *KbsConfigReconciler) deployOrUpdateKbsDeployment(ctx context.Context) e
 
 func (r *KbsConfigReconciler) buildKbsVolumeMounts(ctx context.Context, volumes []corev1.Volume) ([]corev1.Volume, []corev1.VolumeMount, error) {
 	var kbsEtcVolumes, kbsSecretResourceVolumes []corev1.Volume
+	var emptyDirVolume []corev1.Volume
 	kbsEtcVolumes, err := r.processKbsConfigMap(ctx, kbsEtcVolumes)
 	if err != nil {
 		return nil, nil, err
@@ -331,9 +332,19 @@ func (r *KbsConfigReconciler) buildKbsVolumeMounts(ctx context.Context, volumes 
 		return nil, nil, err
 	}
 
+	// The path /opt/confidential-container is mounted
+	// as a RW volume in memory to allow trustee components
+	//to have full access to the filesystem
+	emptyDirVolume, err = r.processEmptyDirVolume(emptyDirVolume)
+	if err != nil {
+		return nil, nil, err
+	}
+
 	// Add the kbsSecretResourceVolumes to the volumesMounts
 	volumeMounts = append(volumeMounts, volumesToVolumeMounts(kbsSecretResourceVolumes, kbsResourcesPath)...)
+	volumeMounts = append(volumeMounts, volumesToVolumeMounts(emptyDirVolume, rootPath)...)
 	volumes = append(volumes, kbsSecretResourceVolumes...)
+	volumes = append(volumes, emptyDirVolume...)
 
 	// For the DeploymentTypeAllInOne case, if reference-values.json file is provided must be mounted as a kbs volume
 	if r.kbsConfig.Spec.KbsDeploymentType == confidentialcontainersorgv1alpha1.DeploymentTypeAllInOne {
@@ -416,8 +427,6 @@ func (r *KbsConfigReconciler) newKbsDeployment(ctx context.Context) *appsv1.Depl
 		kbsDeploymentType = confidentialcontainersorgv1alpha1.DeploymentTypeMicroservices
 	}
 
-	// RunAsUser (root) 0
-	runAsUser := int64(0)
 	var volumes []corev1.Volume
 
 	// build KBS container
@@ -425,7 +434,7 @@ func (r *KbsConfigReconciler) newKbsDeployment(ctx context.Context) *appsv1.Depl
 	if err != nil {
 		return nil
 	}
-	containers := []corev1.Container{r.buildKbsContainer(kbsVolumeMounts, runAsUser)}
+	containers := []corev1.Container{r.buildKbsContainer(kbsVolumeMounts)}
 
 	if kbsDeploymentType == confidentialcontainersorgv1alpha1.DeploymentTypeMicroservices {
 		// build AS container
@@ -434,14 +443,14 @@ func (r *KbsConfigReconciler) newKbsDeployment(ctx context.Context) *appsv1.Depl
 		if err != nil {
 			return nil
 		}
-		containers = append(containers, r.buildAsContainer(asVolumeMounts, runAsUser))
+		containers = append(containers, r.buildAsContainer(asVolumeMounts))
 		// build RVPS container
 		var rvpsVolumeMounts []corev1.VolumeMount
 		volumes, rvpsVolumeMounts, err = r.buildRvpsVolumesMounts(ctx, volumes)
 		if err != nil {
 			return nil
 		}
-		containers = append(containers, r.buildRvpsContainer(rvpsVolumeMounts, runAsUser))
+		containers = append(containers, r.buildRvpsContainer(rvpsVolumeMounts))
 	}
 
 	// Create the deployment
@@ -475,7 +484,7 @@ func (r *KbsConfigReconciler) newKbsDeployment(ctx context.Context) *appsv1.Depl
 	return deployment
 }
 
-func (r *KbsConfigReconciler) buildAsContainer(volumeMounts []corev1.VolumeMount, runAsUser int64) corev1.Container {
+func (r *KbsConfigReconciler) buildAsContainer(volumeMounts []corev1.VolumeMount) corev1.Container {
 	asImageName := os.Getenv("AS_IMAGE_NAME")
 	if asImageName == "" {
 		asImageName = DefaultAsImageName
@@ -501,16 +510,12 @@ func (r *KbsConfigReconciler) buildAsContainer(volumeMounts []corev1.VolumeMount
 		},
 		// Add command to start AS
 		Command: asCommand,
-		// Add SecurityContext
-		SecurityContext: &corev1.SecurityContext{
-			RunAsUser: &runAsUser,
-		},
 		// Add volume mount for config
 		VolumeMounts: volumeMounts,
 	}
 }
 
-func (r *KbsConfigReconciler) buildRvpsContainer(volumeMounts []corev1.VolumeMount, runAsUser int64) corev1.Container {
+func (r *KbsConfigReconciler) buildRvpsContainer(volumeMounts []corev1.VolumeMount) corev1.Container {
 	rvpsImageName := os.Getenv("RVPS_IMAGE_NAME")
 	if rvpsImageName == "" {
 		rvpsImageName = DefaultRvpsImageName
@@ -534,16 +539,12 @@ func (r *KbsConfigReconciler) buildRvpsContainer(volumeMounts []corev1.VolumeMou
 		},
 		// Add command to start RVPS
 		Command: rvpsCommand,
-		// Add SecurityContext
-		SecurityContext: &corev1.SecurityContext{
-			RunAsUser: &runAsUser,
-		},
 		// Add volume mount for config
 		VolumeMounts: volumeMounts,
 	}
 }
 
-func (r *KbsConfigReconciler) buildKbsContainer(volumeMounts []corev1.VolumeMount, runAsUser int64) corev1.Container {
+func (r *KbsConfigReconciler) buildKbsContainer(volumeMounts []corev1.VolumeMount) corev1.Container {
 	// Get Image Name from env variable if set
 	imageName := os.Getenv("KBS_IMAGE_NAME")
 	if imageName == "" {
@@ -568,10 +569,6 @@ func (r *KbsConfigReconciler) buildKbsContainer(volumeMounts []corev1.VolumeMoun
 		},
 		// Add command to start KBS
 		Command: command,
-		// Add SecurityContext
-		SecurityContext: &corev1.SecurityContext{
-			RunAsUser: &runAsUser,
-		},
 		// Add volume mount for KBS config
 		VolumeMounts: volumeMounts,
 		/* TODO commented out because not configurable yet
@@ -823,7 +820,18 @@ func (r *KbsConfigReconciler) processKbsSecretResources(ctx context.Context, vol
 		}
 	}
 	return volumes, nil
+}
 
+func (r *KbsConfigReconciler) processEmptyDirVolume(volumes []corev1.Volume) ([]corev1.Volume, error) {
+	volumes = append(volumes, corev1.Volume{
+		Name: confidentialContainers,
+		VolumeSource: corev1.VolumeSource{
+			EmptyDir: &corev1.EmptyDirVolumeSource{
+				Medium: corev1.StorageMediumMemory,
+			},
+		},
+	})
+	return volumes, nil
 }
 
 // updateKbsDeployment updates an existing deployment for the KBS instance
