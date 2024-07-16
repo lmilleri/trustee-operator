@@ -65,6 +65,17 @@ type KbsConfigSpec struct {
   // ibmSEConfigSpec is the struct that hosts the IBMSE specific configuration
   // +optional
   IbmSEConfigSpec IbmSEConfigSpec `json:"ibmSEConfigSpec,omitempty"`
+
+  // itaConfigSpec is the struct that hosts the Intel Trusted Authority (ITA) specific configuration
+  // +optional
+  ItaConfigSpec ItaConfigSpec `json:"itaConfigSpec,omitempty"`
+}
+
+// ItaConfigSpec defines the desired state for ITA configuration
+type ItaConfigSpec struct {
+  // kbsItaConfigMapName is the name of the configmap containing intel-trust-authority-certs.txt file
+  // +optional
+  KbsItaConfigMapName string `json:"kbsItaConfigMapName,omitempty"`
 }
 
 // IbmSEConfigSpec defines the desired state for IBMSE configuration
@@ -173,6 +184,9 @@ spec:
   # IBMSE settings
   ibmSEConfigSpec:
     configPvcName: ibmse-pvc
+  # ITA settings
+  itaConfigSpec:
+    kbsItaConfigMapName: ita-config-sample
 ```
 
 ## Getting Started

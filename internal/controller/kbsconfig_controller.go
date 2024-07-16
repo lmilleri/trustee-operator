@@ -391,6 +391,17 @@ func (r *KbsConfigReconciler) newKbsDeployment(ctx context.Context) (*appsv1.Dep
 		kbsVM = append(kbsVM, volumeMount)
 	}
 
+	// ITA specific configuration
+	if r.kbsConfig.Spec.ItaConfigSpec.KbsItaConfigMapName != "" {
+		volume, err = r.createConfigMapVolume(ctx, "ita-config", r.kbsConfig.Spec.ItaConfigSpec.KbsItaConfigMapName)
+		if err != nil {
+			return nil, err
+		}
+		volumeMount = createVolumeMountWithSubpath(volume.Name, filepath.Join(kbsDefaultConfigPath, itaCertificate), itaCertificate)
+		volumes = append(volumes, *volume)
+		kbsVM = append(kbsVM, volumeMount)
+	}
+
 	// auth-secret
 	volume, err = r.createSecretVolume(ctx, "auth-secret", r.kbsConfig.Spec.KbsAuthSecretName)
 	if err != nil {

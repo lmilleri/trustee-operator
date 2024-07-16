@@ -23,5 +23,10 @@ data:
         },
         "policy_engine_config": {
           "policy_path": "/opt/confidential-containers/opa/policy.rego"
+        },
+        "intel_trust_authority_config" : {
+          "base_url": "https://api.trustauthority.intel.com",
+          "api_key": "tBfd5kKX2x9ahbodKV1...",
+          "certs_file": "/etc/intel-trust-authority-certs.txt"
         }
     }

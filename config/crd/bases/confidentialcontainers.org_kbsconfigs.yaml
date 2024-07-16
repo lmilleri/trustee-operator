@@ -48,6 +48,15 @@ spec:
                       where certificates/keys are mounted
                     type: string
                 type: object
+              itaConfigSpec:
+                description: itaConfigSpec is the struct that hosts the Intel Trusted
+                  Authority (ITA) specific configuration
+                properties:
+                  kbsItaConfigMapName:
+                    description: kbsItaConfigMapName is the name of the configmap
+                      containing intel-trust-authority-certs.txt file
+                    type: string
+                type: object
               kbsAsConfigMapName:
                 description: |-
                   KbsAsConfigMapName is the name of the configmap that contains the KBS AS configuration

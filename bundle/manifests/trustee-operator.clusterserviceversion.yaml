@@ -24,7 +24,8 @@ metadata:
             "kbsDeploymentType": "AllInOneDeployment",
             "kbsResourcePolicyConfigMapName": "resource-policy",
             "kbsRvpsRefValuesConfigMapName": "rvps-reference-values",
-            "kbsTdxConfigMapName": "tdx-config"
+            "kbsTdxConfigMapName": "tdx-config",
+            "kbsItaConfigMapName": "ita-config"
           }
         }
       ]
@@ -216,7 +217,7 @@ spec:
                     fieldRef:
                       fieldPath: metadata.namespace
                 - name: KBS_IMAGE_NAME
-                  value: quay.io/confidential-containers/trustee:290fd0eb64ab20f50efbd27cf80542851c0ee17f
+                  value: quay.io/confidential-containers/trustee:d8858befe6db48cddfe24642cfdb67f25454dc7f
                 - name: AS_IMAGE_NAME
                   value: ghcr.io/confidential-containers/staged-images/coco-as-grpc:latest
                 - name: RVPS_IMAGE_NAME

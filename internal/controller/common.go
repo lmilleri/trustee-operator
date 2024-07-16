@@ -70,6 +70,9 @@ const (
 
 	// IBM SE path
 	ibmSePath = "/run/confidential-containers/ibmse/"
+
+	// ITA certificate
+	itaCertificate = "intel-trust-authority-certs.txt"
 )
 
 func contains(list []string, s string) bool {
