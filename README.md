@@ -61,6 +61,17 @@ type KbsConfigSpec struct {
   // tdxConfigSpec is the struct that hosts the TDX specific configuration
   // +optional
   TdxConfigSpec TdxConfigSpec `json:"tdxConfigSpec,omitempty"`
+
+  // ibmSEConfigSpec is the struct that hosts the IBMSE specific configuration
+  // +optional
+  IbmSEConfigSpec IbmSEConfigSpec `json:"ibmSEConfigSpec,omitempty"`
+}
+
+// IbmSEConfigSpec defines the desired state for IBMSE configuration
+type IbmSEConfigSpec struct {
+  // configPvcName is the name of the PeristentVolumeClaim where certificates/keys are mounted
+  // +optional
+  ConfigPvcName string `json:"configPvcName,omitempty"`
 }
 
 // TdxConfigSpec defines the desired state for TDX configuration
@@ -156,8 +167,12 @@ spec:
   kbsSecretResources: ["kbsres1"]
   # Resource policy
   kbsResourcePolicyConfigMapName: resource-policy
-  # TDX configuration file
-  kbsTdxConfigMapName: tdx-config
+  # TDX settings
+  tdxConfigSpec:
+    kbsTdxConfigMapName: tdx-config-sample
+  # IBMSE settings
+  ibmSEConfigSpec:
+    configPvcName: ibmse-pvc
 ```
 
 ## Getting Started
