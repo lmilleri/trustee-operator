@@ -31,7 +31,7 @@ metadata:
       ]
     capabilities: Basic Install
     categories: Security
-    containerImage: quay.io/confidential-containers/trustee-operator:v0.1.0
+    containerImage: quay.io/rh_ee_lmilleri/trustee-operator:v0.1.0-ita
     createdAt: "2024-06-26T10:00:49Z"
     operators.operatorframework.io/builder: operator-sdk-v1.33.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v4
@@ -217,12 +217,12 @@ spec:
                     fieldRef:
                       fieldPath: metadata.namespace
                 - name: KBS_IMAGE_NAME
-                  value: quay.io/confidential-containers/trustee:d8858befe6db48cddfe24642cfdb67f25454dc7f
+                  value: quay.io/fidencio/trustee:bm-with-ita-support-v0.0.1
                 - name: AS_IMAGE_NAME
                   value: ghcr.io/confidential-containers/staged-images/coco-as-grpc:latest
                 - name: RVPS_IMAGE_NAME
                   value: ghcr.io/confidential-containers/staged-images/rvps:latest
-                image: quay.io/confidential-containers/trustee-operator:v0.1.0
+                image: quay.io/rh_ee_lmilleri/trustee-operator:v0.1.0-ita
                 livenessProbe:
                   httpGet:
                     path: /healthz
