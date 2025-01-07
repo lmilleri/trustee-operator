@@ -26,7 +26,7 @@ patches:
 # inject sample resources in kbs
 - path: patch-kbs-resources.yaml
 # uncomment the following line for enabling DEBUG logs
-#- path: patch-env-vars.yaml
+- path: patch-env-vars.yaml
 
 resources:
 - kbsconfig_sample.yaml

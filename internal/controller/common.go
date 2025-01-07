@@ -63,7 +63,7 @@ const (
 	rvpsDefaultConfigPath = "/etc"
 
 	// Default RVPS reference values Path
-	rvpsReferenceValuesPath = confidentialContainersPath + "/rvps"
+	rvpsReferenceValuesPath = confidentialContainersPath + "/attestation-service"
 
 	// TDX config file
 	tdxConfigFile = "sgx_default_qcnl.conf"

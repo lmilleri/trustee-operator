@@ -10,6 +10,10 @@ data:
         "policy_engine": "opa",
         "rvps_config": {
             "type": "BuiltIn",
+            "storage" : {
+              "type": "LocalJson",
+              "file_path": "/opt/confidential-containers/attestation-service/reference-values/reference-values.json"
+            },
             "remote_addr":"http://127.0.0.1:50003"
         },
         "attestation_token_broker": {
